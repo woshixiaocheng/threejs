@@ -24,33 +24,79 @@ scene.add(camera)
 //4、创建立方体
 //BoxGeometry立方体——这个对象包含立方体中所有的顶点(vertices)和面（faces）
 const geometry = new THREE.BoxGeometry(1, 1, 1)
+
 //设置材质/颜色
+//考虑纹理加载情况——加载完再显示
+//单张图加载
+let event = {}
+event.onLoad = function () {
+  console.log("加载完成")
+}
+event.onProgress = function (e) {
+  console.log(e)
+  console.log("加载中")
+}
+event.onError = function (e) {
+  console.log("错误")
+}
+//设置加载管理器
+const loadingManager = new THREE.LoadingManager(
+  event.onLoad,
+  event.onProgress,
+  event.onError
+)
+//把加载管理器附在textureLoader中,这样就是批量添加了
+const textureLoader = new THREE.TextureLoader(loadingManager)
 //导入纹理
-const textureLoader = new THREE.TextureLoader()
+// const textureLoader = new THREE.TextureLoader()
 //这里加载的路径是npm run build打包出来的dist中的路径
 //使用的是vite先import引入图片再使用变量
 const doorColorTexture = textureLoader.load("./dist/textures/door/color.jpg")
 //纹理常用属性
-//设置偏移
-doorColorTexture.offset.x = 0.5
-doorColorTexture.offset.y = 0.5
-doorColorTexture.offset.set(0.5, 0.5)
+// //设置偏移
+// doorColorTexture.offset.x = 0.5
+// doorColorTexture.offset.y = 0.5
+// doorColorTexture.offset.set(0.5, 0.5)
 //设置旋转
 //设置旋转的原点
-doorColorTexture.center.set(0.5, 0.5)
-doorColorTexture.rotation = Math.PI / 4//45度
-//设置纹理重复
-doorColorTexture.repeat.set(2, 3)
+// doorColorTexture.center.set(0.5, 0.5)
+// doorColorTexture.rotation = Math.PI / 4//45度
+// //设置纹理重复
+// doorColorTexture.repeat.set(2, 3)
 //设置纹理重复的模式
-doorColorTexture.wrapS = THREE.RepeatWrapping//水平方向
-doorColorTexture.wrapT = THREE.MirroredRepeatWrapping//垂直方向，镜像重复
+// doorColorTexture.wrapS = THREE.RepeatWrapping//水平方向
+// doorColorTexture.wrapT = THREE.MirroredRepeatWrapping//垂直方向，镜像重复
 
-const material = new THREE.MeshBasicMaterial({
+//texture纹理显示设置
+//minFilter一个纹素覆盖小于一个像素时如何采样/magFilter相反
+textureLoader.minFilter = THREE.NearestFilter//使用最接近的温宿值
+textureLoader.minFilter = THREE.LinearFilter//默认的
+
+//透明纹理-黑色区域完全透明，白色区域完全不透明
+const aplhaTexture = textureLoader.load("./dist/textures/door/alpha.jpg")
+
+
+//导入纹理
+//环境遮挡贴图
+//第一组uv控制的是颜色效果，第二组的环境光照效果
+const aoTexture = textureLoader.load("./dist/textures/door/ambientOcclusion.jpg", event.onLoad, event.onProgress, event.onError)
+//基础贴图MeshBasicMaterial、标准贴图模拟虚幻MeshStandandMaterial（要有灯光才会折射）
+// const material = new THREE.MeshBasicMaterial({
+const material = new THREE.MeshStandardMaterial({
   color: 0xffff00,
   map: doorColorTexture,//设置纹理
+  alphaMap: aplhaTexture,//设置透明纹理
+  transparent: true,//允许透明
+  aoMap: aoTexture,//环境
+  // opacity: 0.5,//设置透明度，=
+  // side: THREE.DoubleSide,//设置两面可看
 })
+
+
+
 //网格：包含一个几何体和作用在此几何体上的材质，可以直接把网格放入场景在场景中自然移动
 const cube = new THREE.Mesh(geometry, material)
+//要实现有环境光的遮挡，要给设置第二组uv
 
 // //修改物体位置 
 // cube.position.x = 3
@@ -62,6 +108,15 @@ scene.add(cube)//添加cube到场景中
 
 camera.position.z = 5
 
+//灯光
+//环境光
+// const light = new THREE.AmbientLight(0xffffff, 0.5)//颜色和强度
+// scene.add(light)
+
+//直线光源
+const directionLight = new THREE.DirectionalLight(0xffffff, 0.5)
+directionLight.position.set(10, 10, 10)//设置光源
+scene.add(directionLight)
 //3、渲染器
 //除了我们在这里用到的WebGLRenderer渲染器之外，
 //Three.js同时提供了其他几种渲染器，
