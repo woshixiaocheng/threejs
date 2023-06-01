@@ -84,29 +84,77 @@ const aoTexture = textureLoader.load("./dist/textures/door/ambientOcclusion.jpg"
 // const material = new THREE.MeshBasicMaterial({
 const material = new THREE.MeshStandardMaterial({
   color: 0xffff00,
-  map: doorColorTexture,//设置纹理
-  alphaMap: aplhaTexture,//设置透明纹理
-  transparent: true,//允许透明
-  aoMap: aoTexture,//环境
+  // map: doorColorTexture,//设置纹理
+  // alphaMap: aplhaTexture,//设置透明纹理
+  // transparent: true,//允许透明
+  // aoMap: aoTexture,//环境
   // opacity: 0.5,//设置透明度，=
   // side: THREE.DoubleSide,//设置两面可看
 })
 
+//环境贴图-正方形
+//设置cube纹理加载器
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+//背景贴图第一种方式：六个面
+const envMapTexture = cubeTextureLoader.load([//正方向p负方向n
+  "./dist/textures/environmentMaps/1/px.jpg",
+  "./dist/textures/environmentMaps/1/nx.jpg",
+  "./dist/textures/environmentMaps/1/py.jpg",
+  "./dist/textures/environmentMaps/1/ny.jpg",
+  "./dist/textures/environmentMaps/1/pz.jpg",
+  "./dist/textures/environmentMaps/1/nz.jpg",
+])
+//经纬线映射贴图- 背景图
+//给场景添加·背景
+// scene.background = envMapTexture
+// // //接纹理贴图会被设为场景中所有物理材质的环境贴图
+// scene.environment = envMapTexture
 
+
+//背景贴图第二种方式：hdr：更好的明暗区别更多的细节
+// import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
+// const rgbeLoader = new RGBELoader()
+// //因为hdr的图比较大所以异步加载
+// rgbeLoader.loadAsync('./dist/textures/hdr/002.hdr').then((textures) => {
+//   textures.mapping = THREE.EquirectangularReflectionMapping//把纹理设置为映射贴图才能作为环境图
+//   scene.background = textures
+//   scene.environment = textures
+// })
+
+const sphereGeometry = new THREE.SphereGeometry(1, 20, 20)
+const sphereMeterial = new THREE.MeshStandardMaterial({
+  metalness: 0.7,//材质与金属的相似度
+  roughness: 0.1//材质的粗糙度
+})
+const sphere = new THREE.Mesh(sphereGeometry, sphereMeterial)
+//给球设置投射阴影
+sphere.castShadow = true
+scene.add(sphere)
+
+//创建平面
+const planeGeometry = new THREE.PlaneBufferGeometry(10, 10)
+const plane = new THREE.Mesh(planeGeometry, material)
+plane.position.set(0, -1, 0)
+plane.rotation.x = -Math.PI / 2
+//平面接收阴影
+plane.receiveShadow = true
+scene.add(plane)
 
 //网格：包含一个几何体和作用在此几何体上的材质，可以直接把网格放入场景在场景中自然移动
-const cube = new THREE.Mesh(geometry, material)
-//要实现有环境光的遮挡，要给设置第二组uv
+// const cube = new THREE.Mesh(geometry, material)
+// //要实现有环境光的遮挡，要给设置第二组uv
 
-// //修改物体位置 
-// cube.position.x = 3
-// //设置物体缩放
-// cube.scale.set(3, 2, 1)
-// //设置旋转 最后一个设置旋转值
-// cube.rotation.set(4, 0, 0, "XYZ")
-scene.add(cube)//添加cube到场景中
+// // //修改物体位置 
+// // cube.position.x = 3
+// // //设置物体缩放
+// // cube.scale.set(3, 2, 1)
+// // //设置旋转 最后一个设置旋转值
+// // cube.rotation.set(4, 0, 0, "XYZ")
+// scene.add(cube)//添加cube到场景中
 
 camera.position.z = 5
+
+
 
 //灯光
 //环境光
@@ -116,7 +164,20 @@ camera.position.z = 5
 //直线光源
 const directionLight = new THREE.DirectionalLight(0xffffff, 0.5)
 directionLight.position.set(10, 10, 10)//设置光源
+directionLight.castShadow = true//设置阴影
+//设置阴影贴图模糊度
+directionLight.shadow.radius = 20
+//设置阴影贴图的分辨率(分辨率越高会越清晰)
+directionLight.shadow.mapSize.set(2048, 2048)
+
 scene.add(directionLight)
+
+//要实现阴影的步骤
+//①材质要满足对光照有反应
+//②设置渲染器开启阴影的计算 renderer.shadowMap.enabled=true;
+//③设置光照投射阴影 directionalLight.castShadow=true
+//④设置物体投射阴影 sphere.castShadow=true;
+//⑤设置物体接收阴影 plane.receiveShadow=true; 
 //3、渲染器
 //除了我们在这里用到的WebGLRenderer渲染器之外，
 //Three.js同时提供了其他几种渲染器，
@@ -125,6 +186,9 @@ scene.add(directionLight)
 const renderer = new THREE.WebGLRenderer()
 //设置渲染器尺寸可以把浏览器窗口设为，如果对性能比较敏感可以传一半
 renderer.setSize(window.innerWidth, window.innerHeight)
+//开启场景中的阴影贴图
+renderer.shadowMap.enabled = true
+
 //显示给场景的是canvas元素
 document.body.appendChild(renderer.domElement)
 //使用渲染器，通过相机把场景渲染进来——将画面渲染到canvas上
