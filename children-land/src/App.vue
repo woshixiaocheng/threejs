@@ -1,4 +1,5 @@
 <template>
+  <div id="container"></div>
 </template>
 
 <script lang="ts">
@@ -9,7 +10,10 @@ export default defineComponent({
   props: {},
   setup() {
     onMounted(() => {
-      new ThreeJs();
+      if(document.getElementById('container')){
+        new ThreeJs(document.getElementById('container') as any);
+      }
+      
     });
   },
 });

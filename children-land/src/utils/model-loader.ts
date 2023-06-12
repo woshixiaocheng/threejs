@@ -1,13 +1,14 @@
-// @file--Viewer场景类函数
+/* @file--ModelLoader模型加载器类函数*/
+//可以将gltf模型压缩
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-export default class ThreeJs {
+export default class Viewer {
   scene: THREE.Scene | null = null
   camera: THREE.PerspectiveCamera | null = null
   renderer: THREE.WebGLRenderer | null = null
   ambientLight: THREE.AmbientLight | null = null
-  mesh: THREE.Mesh | null = null
+  // mesh: THREE.Mesh | null = null
 
   constructor(dom: HTMLElement) {
     this.init(dom)
@@ -19,7 +20,7 @@ export default class ThreeJs {
     this.setCamera()
     this.setRenderer(dom)
     this.setControler()
-    this.setCube()
+    // this.setCube()
     // this.animate()
   }
 
@@ -75,17 +76,17 @@ export default class ThreeJs {
   }
 
   // 创建场景模型
-  setCube(): void {
-    if (this.scene) {
-      const geometry = new THREE.BoxGeometry() //创建一个立方体几何对象Geometry
-      // const material = new THREE.MeshBasicMaterial({ color: 0xff3200 }); //材质对象Material
-      const texture = new THREE.TextureLoader().load('./src/assets/color.jpg') //首先，获取到纹理
-      const material = new THREE.MeshBasicMaterial({ map: texture }) //然后创建一个phong材质来处理着色，并传递给纹理映射
-      this.mesh = new THREE.Mesh(geometry, material) //网格模型对象Mesh
-      this.scene.add(this.mesh) //网格模型添加到场景中
-      this.render()
-    }
-  }
+  // setCube(): void {
+  //   if (this.scene) {
+  //     const geometry = new THREE.BoxGeometry() //创建一个立方体几何对象Geometry
+  //     // const material = new THREE.MeshBasicMaterial({ color: 0xff3200 }); //材质对象Material
+  //     const texture = new THREE.TextureLoader().load('./src/assets/color.jpg') //首先，获取到纹理
+  //     const material = new THREE.MeshBasicMaterial({ map: texture }) //然后创建一个phong材质来处理着色，并传递给纹理映射
+  //     this.mesh = new THREE.Mesh(geometry, material) //网格模型对象Mesh
+  //     this.scene.add(this.mesh) //网格模型添加到场景中
+  //     this.render()
+  //   }
+  // }
 
   // 渲染
   render(): void {
