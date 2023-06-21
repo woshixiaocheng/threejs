@@ -1,22 +1,30 @@
 <template>
-  <div id="container"></div>
+  <div class="main">
+  </div>
 </template>
 
 <script lang="ts">
-import ThreeJs from "./index";
+import { Viewer } from "./utils";
 import { defineComponent, onMounted } from "vue";
 export default defineComponent({
   name: "app",
   props: {},
   setup() {
     onMounted(() => {
-      if(document.getElementById('container')){
-        new ThreeJs(document.getElementById('container') as any);
-      }
-      
+      console.log(Viewer)
+        new Viewer();
     });
   },
 });
 </script>
-<style scoped lang="scss"></style>
+<style scoped>
+.main {
+  width: 100%;
+  height: 100%;
+}
+#webgl {
+  width: 100%;
+  height: 100%;
+}
+</style>
 
